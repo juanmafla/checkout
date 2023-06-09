@@ -12,20 +12,13 @@
 
     require_once 'vars.php';
 
-    $session= $stripe->checkout->sessions->retrieve(
-      $_GET["session_id"]
+    $paymentIntents= $stripe->paymentIntents->retrieve(
+      $_GET["payment_intent"],
+      []
     );
 
     print "<pre>";
-    print_r($session);
-    print "</pre>";
-
-    $PaymentIntent= $stripe->paymentIntents->retrieve(
-      $session->payment_intent,
-    );
-
-    print "<pre>";
-    print_r($PaymentIntent);
+    print_r($paymentIntents);
     print "</pre>";
 
   } catch (\Stripe\Exception\RateLimitException $e) {
