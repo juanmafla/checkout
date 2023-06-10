@@ -1,18 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout</title>
-</head>
-<body>
+<?php
+		//Homepage. This page is where all the variables are set. This page is where the buttons appear or the payment form is redirected.
 
-	<?php
+		require_once 'vars.php';
 
-		$has_commissions = false;
-		$product_price = 2500;
-		$product_name = 'directsalesmlm';
+		$has_commissions = false; // has comissions?
+		$product_price = 2700; // price *required
+		$product_name = 'directsalesmlm'; //product name *required
 
 		if($has_commissions) {
 			// pay with comissions
@@ -20,25 +13,39 @@
 		} else {
 			//pay with credit card
 
+
+			// customer or product metadata. You can save any data that you want. *must be an array
+			$Payment_metadata= array(
+				'name' => 'John',
+				'lastname' => 'Doe',
+				'product' => 'a fine product',
+				'SKU' => '3jda7223a',
+				'date' => '06-09-23',
+				'shop' => 'my shop',
+			);
+
+			/* YOU NEED THIS FOR SETTING PAYMENTS FORM, IF USER EXIST IN STRIPE */
 			$stripe_customer_id = 'cus_O2yfcSRHUNEnwL'; //get this from the database
 
 			if($stripe_customer_id) {
 				//if there is user id saved
 
-				$stripe_paymentMethod = 'pm_1NGsi1HUGtW3QZJTpspRA4qE'; //get this from the database
+				/* YOU NEED THIS FOR CHARGE A SAVED CARD*/
+				$stripe_paymentMethod = 'pm_1NHGQWHUGtW3QZJTm6JlX7FL'; //get this from the database
 
 				if($stripe_paymentMethod) {
 					//if there is payment method saved
 
 					try {
 
-						require_once 'vars.php';
+						//FOR GET THE LAST 4 DIGITS OF THE SAVED CARD
 						$paymentMethod= $stripe->paymentMethods->retrieve(
 						  $stripe_paymentMethod
 						);
 
 
-						echo PaySaveCardbtn($product_price, $stripe_customer_id, $stripe_paymentMethod, $paymentMethod, $product_name, 'Pay');
+						// pay with saved card button
+						echo PaySaveCardbtn($product_price, $stripe_customer_id, $stripe_paymentMethod, $paymentMethod, $product_name, $Payment_metadata, 'Pay');
 
 
 					} catch (\Stripe\Exception\RateLimitException $e) {
@@ -59,22 +66,21 @@
 				    echo 'Message is:' . $e->getError()->message . '\n';
 				  }
 
-				  echo PayCardbtn($product_price, $stripe_customer_id, $product_name, 'No, other card');
+				  // pay with other card button
+				  echo PayCardbtn($product_price, $stripe_customer_id, $product_name, $Payment_metadata, 'No, other card');
 
 				} else {
 
-					echo PayCardbtn($product_price, $stripe_customer_id, $product_name, 'Pay');
+					//If the customer do not have a saved card, he will be redirected to the payment form
+					echo CreateCheckoutSession($stripe_customer_id, $product_name, $product_price, $Payment_metadata);
 
 				}				
 
 			} else {
-
-				echo PayCardbtn($product_price, $stripe_customer_id, $product_name, 'Pay');
+				// pay with other card button
+				echo PayCardbtn($product_price, $stripe_customer_id, $product_name, $Payment_metadata, 'Pay');
 			}
 
 		}
 
-	?>
-    
-</body>
-</html>
+?>

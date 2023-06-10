@@ -1,14 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pay</title>
-</head>
-<body>   
-
 <?php  
+//Here the "Payment Intent" is created and a card on file is charged
 
   require_once 'vars.php';
 
@@ -24,15 +15,18 @@
       'automatic_payment_methods' => [
         'enabled' => true,
       ],
-      'return_url' => $return_url
+      'return_url' => $return_url,
+      'metadata' => $_POST['metadata'],
     ]);
 
-    header("HTTP/1.1 303 See Other");
+      header("HTTP/1.1 303 See Other");
 
-    if($paymentIntent->next_action) {
+    if($paymentIntent->next_action) {      
+      //if is a 3D secure card       
        header("Location: " . $paymentIntent->next_action->redirect_to_url->url);
     } else {
-      header("Location: " . $paymentIntent->charges->data['0']->receipt_url);
+      // normal card
+      header("Location: " . $return_url.'?payment_intent='.$paymentIntent->id);
     }
    
   } catch(\Stripe\Exception\CardException $e) {
@@ -41,6 +35,7 @@
     echo 'Code is:' . $e->getError()->code . '\n';
     echo 'Message is:' . $e->getError()->message . '\n';
 
+    //pay with other card button
     echo PayCardbtn($_POST['product_price'], $_POST['cus'], $_POST['product_name'], 'Pay with other card');
 
   } catch (\Stripe\Exception\RateLimitException $e) {
@@ -62,7 +57,3 @@
   }
 
 ?>
-
-</body>
-</html>
-

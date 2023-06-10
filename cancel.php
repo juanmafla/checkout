@@ -1,3 +1,4 @@
+<!-- page where the user is redirected when canceling a payment process -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
